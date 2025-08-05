@@ -1,16 +1,15 @@
 package school.hei.tsinjo.model;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Donor {
-    private UUID id;
-    private String email;
-    private String fullName;
+  private UUID id;
+  private String email;
+  private String fullName;
 }
