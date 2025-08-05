@@ -1,5 +1,22 @@
 package school.hei.tsinjo.service;
 
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import school.hei.tsinjo.model.Payment;
+import school.hei.tsinjo.model.PaymentStatus;
+import school.hei.tsinjo.repository.PaymentRepository;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Logger;
+
 @Service
 public class VolaService {
   private static final Logger log = LoggerFactory.getLogger(VolaService.class);
@@ -27,9 +44,9 @@ public class VolaService {
           payment.setStatus(newStatus);
           paymentRepository.update(payment);
 
-          log.info("Payment {} status updated to {}", payment.getId(), newStatus);
+          log.info("Payment {} status updated to {}");
         } else {
-          log.debug("Payment {} still verifying", payment.getId());
+          log.info("Payment {} still verifying", payment.getId());
         }
 
       } catch (Exception ex) {
