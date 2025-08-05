@@ -15,4 +15,6 @@ public class Payment {
   private LocalDateTime date;
   private BigDecimal amount;
   private String method;
+  private PaymentStatus status;
+  private UUID donationId;
 }
