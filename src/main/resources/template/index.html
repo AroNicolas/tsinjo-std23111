@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Tsinjo</title>
+  <meta charset="UTF-8">
+</head>
+<body>
+<h1>Tsinjo</h1>
+
+<form th:action="@{/don}" method="post">
+  <input type="text" name="email" placeholder="Email du donateur" required />
+  <input type="text" name="moyen de payement" placeholder="Moyen de payement" required />
+  <input type="text" name="Référence de paiement" placeholder="Référence" required />
+  <button type="submit">Donner !</button>
+</form>
+
+<hr/>
+
+<h2>Historique</h2>
+<ul>
+  <li th:each="entry : ${entries}">
+    <div th:switch="${entry.type}">
+      <div th:case="'don'">
+        <p>
+          + <span th:text="${#numbers.formatInteger(entry.amount, #numbers.INTEGER_COMMA)}"></span>Ar
+          (<span th:text="${entry.state}"></span>, <span th:text="${entry.paymentMode}"></span>).
+        </p>
+        <p>
+          <span th:text="${#dates.format(entry.date, 'dd/MM/yyyy')}"></span>.
+          Par <span th:text="${entry.donorName}"></span> (<span th:text="${entry.donorEmail}"></span>).
+        </p>
+      </div>
+
+      <div th:case="'aide'">
+        <p>
+          - <span th:text="${#numbers.formatInteger(entry.amount, #numbers.INTEGER_COMMA)}"></span>Ar. Pour
+          <span th:text="${entry.beneficiaryName}"></span> (<span th:text="${entry.beneficiaryEmail}"></span>)
+        </p>
+        <p th:text="${entry.reason}"></p>
+      </div>
+    </div>
+  </li>
+</ul>
+
+</body>
+</html>
