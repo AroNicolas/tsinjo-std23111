@@ -2,64 +2,67 @@ package school.hei.tsinjo.service;
 
 @Service
 public class VolaService {
-    private static final Logger log = LoggerFactory.getLogger(VolaService.class);
+  private static final Logger log = LoggerFactory.getLogger(VolaService.class);
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final PaymentRepository paymentRepository;
-    private final String baseUrl = "https://42cwka3n4ifcp7ufheyrpmph240iuaxo.lambda-url.eu-west-3.on.aws";
-    @Value("${vola.api-key}")
-    private String apiKey;
+  private final RestTemplate restTemplate = new RestTemplate();
+  private final PaymentRepository paymentRepository;
+  private final String baseUrl =
+      "https://42cwka3n4ifcp7ufheyrpmph240iuaxo.lambda-url.eu-west-3.on.aws";
 
-    public VolaService(PaymentRepository paymentRepository) {
-        this.paymentRepository = paymentRepository;
-    }
+  @Value("${vola.api-key}")
+  private String apiKey;
 
-    public void updateVerifyingPayments() {
-        List<Payment> verifyingPayments = paymentRepository.findByStatus(PaymentStatus.VERIFYING);
+  public VolaService(PaymentRepository paymentRepository) {
+    this.paymentRepository = paymentRepository;
+  }
 
-        for (Payment payment : verifyingPayments) {
-            try {
-                PaymentStatus newStatus = checkStatus(payment.getId());
+  public void updateVerifyingPayments() {
+    List<Payment> verifyingPayments = paymentRepository.findByStatus(PaymentStatus.VERIFYING);
 
-                if (newStatus != PaymentStatus.VERIFYING) {
-                    payment.setStatus(newStatus);
-                    paymentRepository.update(payment);
+    for (Payment payment : verifyingPayments) {
+      try {
+        PaymentStatus newStatus = checkStatus(payment.getId());
 
-                    log.info("Payment {} status updated to {}", payment.getId(), newStatus);
-                } else {
-                    log.debug("Payment {} still verifying", payment.getId());
-                }
+        if (newStatus != PaymentStatus.VERIFYING) {
+          payment.setStatus(newStatus);
+          paymentRepository.update(payment);
 
-            } catch (Exception ex) {
-                log.error("Failed to update payment {}: {}", payment.getId(), ex.getMessage());
-            }
+          log.info("Payment {} status updated to {}", payment.getId(), newStatus);
+        } else {
+          log.debug("Payment {} still verifying", payment.getId());
         }
+
+      } catch (Exception ex) {
+        log.error("Failed to update payment {}: {}", payment.getId(), ex.getMessage());
+      }
     }
+  }
 
-    public PaymentStatus checkStatus(UUID paymentId) {
-        String url = baseUrl + "/payments/" + paymentId;
+  public PaymentStatus checkStatus(UUID paymentId) {
+    String url = baseUrl + "/payments/" + paymentId;
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-Key", apiKey);
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("X-API-Key", apiKey);
 
-        HttpEntity<Void> request = new HttpEntity<>(headers);
+    HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        try {
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    url, HttpMethod.GET, request, Map.class
-            );
+    try {
+      ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, request, Map.class);
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                String status = (String) response.getBody().get("status");
-                log.debug("Payment {} Vola status = {}", paymentId, status);
-                return PaymentStatus.valueOf(status);
-            } else {
-                log.warn("Unexpected status code {} from Vola for payment {}", response.getStatusCode(), paymentId);
-                return PaymentStatus.VERIFYING;
-            }
-        } catch (Exception ex) {
-            log.error("Error while checking payment status for {}: {}", paymentId, ex.getMessage());
-            return PaymentStatus.VERIFYING;
-        }
+      if (response.getStatusCode().is2xxSuccessful()) {
+        String status = (String) response.getBody().get("status");
+        log.debug("Payment {} Vola status = {}", paymentId, status);
+        return PaymentStatus.valueOf(status);
+      } else {
+        log.warn(
+            "Unexpected status code {} from Vola for payment {}",
+            response.getStatusCode(),
+            paymentId);
+        return PaymentStatus.VERIFYING;
+      }
+    } catch (Exception ex) {
+      log.error("Error while checking payment status for {}: {}", paymentId, ex.getMessage());
+      return PaymentStatus.VERIFYING;
     }
+  }
 }
